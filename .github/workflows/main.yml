@@ -29,5 +29,5 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: pytest-results for ${{ matrix.python-version }}
-          path: junit/test-results-${{ matrix.python-version }}.xml
+          path: '**/test-output.xml'
         if: ${{ always() }}
