@@ -25,4 +25,9 @@ jobs:
       - name: Run tox
         run: |
           tox -e py
-     
+      - name: Upload test results
+        uses: actions/upload-artifact@v2
+        with:
+          name: pytest-results for ${{ matrix.python-version }}
+          path: junit/test-results-${{ matrix.python-version }}.xml
+        if: ${{ always() }}
