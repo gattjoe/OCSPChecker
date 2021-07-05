@@ -60,7 +60,7 @@ jobs:
       - name: Generate provenance
         uses: slsa-framework/github-actions-demo@v0.1
         with:
-          artifact_path: 'dist/*.whl'
+          artifact_path: dist/
       - name: Upload provenance
         uses: actions/upload-artifact@v2
         with:
