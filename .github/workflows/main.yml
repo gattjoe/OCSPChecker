@@ -30,6 +30,11 @@ jobs:
         with:
           name: pytest-results for ${{ matrix.python-version }}
           path: '**/test-output.xml'
+      - name: Upload coverage results
+        uses: actions/upload-artifact@v2
+        with:
+          name: pytest-results for ${{ matrix.python-version }}
+          path: '**/coverage.xml'
         if: ${{ always() }}
 
   build:
@@ -48,7 +53,7 @@ jobs:
           python -m pip install twine
       - name: Build pypy package
         run: |
-          python -m setup.py sdist bdist_wheel
+          python -m setup sdist bdist_wheel
       - name: Check package description
         run: |
           twine check dist/*
