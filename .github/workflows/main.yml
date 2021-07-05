@@ -57,3 +57,7 @@ jobs:
       - name: Check package description
         run: |
           twine check dist/*
+      - name: Generate provenance
+        uses: slsa-framework/github-actions-demo@v0.1
+        with:
+          artifact_path: 'dist/*.whl'
