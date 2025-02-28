@@ -21,7 +21,7 @@ classifiers=[
 ]
 keywords=["ssl, tls, ocsp, python, security"]
 dependencies = [
-    "cryptography~=43.0",
+    "cryptography~=44.0",
     "nassl~=5.2",
     "certifi",
 ]
