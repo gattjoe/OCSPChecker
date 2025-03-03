@@ -1,4 +1,4 @@
-""" Command line module for ocsp-checker """
+""" Command line module for ocspchecker """
 
 import argparse
 
@@ -6,7 +6,7 @@ from ocspchecker import get_ocsp_status
 
 # Create the parser
 arg_parser = argparse.ArgumentParser(
-    prog="ocsp-checker",
+    prog="ocspchecker",
     description="""Check the OCSP revocation\
                                      status for a x509 digital certificate.""",
 )

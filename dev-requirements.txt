@@ -1,5 +1,5 @@
-pytest==8.3.3
-twine==4.0.2
+pytest==8.3.5
+twine==6.1.0
 pylint==3.3.1
 black==24.10.0
 isort==5.13.2

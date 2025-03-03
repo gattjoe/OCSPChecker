@@ -1,11 +1,16 @@
 [build-system]
-requires = ["setuptools>=61.0.0", "wheel"]
+requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name="ocspchecker"
-version="1.9.14"
+version="2.0.0"
 description="Library used to check the OCSP revocation status for a x509 digital certificate."
+dependencies = [
+    "cryptography>=44.0",
+    "nassl>=5.3",
+    "certifi",
+]
 
 readme= {file = "README.md", content-type = "text/markdown"}
 authors=[{ name = "Joe Gatt", email = "gattjoseph@hotmail.com" }]
@@ -18,36 +23,26 @@ classifiers=[
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
 ]
 keywords=["ssl, tls, ocsp, python, security"]
-dependencies = [
-    "cryptography~=43.0",
-    "nassl~=5.2",
-    "certifi",
-]
-requires-python = ">=3.8"
-
-[project.optional-dependencies]
-dev = [
-    'pytest',
-]
-
-[tools.setuptools.packages]
-find = {}
+requires-python = ">=3.9"
 
 [project.urls]
-"homepage" = "https://github.com/MetLife/OCSPChecker"
-"documentation" = "https://github.com/MetLife/OCSPChecker/blob/master/README.md"
-"repository" = "https://github.com/MetLife/OCSPChecker"
-"changelog" = "https://github.com/MetLife/OCSPChecker/blob/master/CHANGELOG.md"
+"homepage" = "https://github.com/gattjoe/OCSPChecker"
+"documentation" = "https://github.com/gattjoe/OCSPChecker/blob/master/README.md"
+"repository" = "https://github.com/gattjoe/OCSPChecker"
+"changelog" = "https://github.com/gattjoe/OCSPChecker/blob/master/CHANGELOG.md"
 
 [project.scripts]
 ocspchecker = "ocspchecker.__main__:main"
 
+[tools.setuptools.packages.find]
+where = ["."]
 
 [tool.black]
 line-length = 100
-target-version = ["py38", "py39", "py310", "py311", "py312"]
+target-version = ["py38", "py39", "py310", "py311", "py312", "py13"]
 
 [tool.isort]
 ensure_newline_before_comments = true
@@ -72,5 +67,5 @@ include = ["ocspchecker" , "tests"]
 reportMissingImports = true
 reportMissingTypeStubs = false
 pythonPlatform = "All"
-pythonVersion = "3.12"
+pythonVersion = "3.13"
 typeCheckingMode = "basic"
