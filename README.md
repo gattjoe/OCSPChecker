@@ -11,7 +11,7 @@ OCSPChecker is a python package based on Alban Diquet's [nassl](https://github.c
 
 ## Pre-requisites
 
-__Python__ - Python 3.8 (64-bit) and above.
+__Python__ - Python 3.9 (64-bit) and above.
 
 ## Installation
 

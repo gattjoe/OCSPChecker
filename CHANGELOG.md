@@ -79,3 +79,9 @@
 - fix flaky tests
 - update CI
 - remove support for Python 3.7
+
+# v2.0.0
+- Relocate repository under gattjoe
+- Removed support for Python 3.8 and added support for Python 3.13
+- Update dependencies and rely soley on pyproject.toml
+- Add CODEOWNERS
