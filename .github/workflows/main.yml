@@ -4,9 +4,6 @@ on:
   push:
     branches:
       - 'master'
-  pull_request:
-    branches:
-      - 'master'
 
 jobs:
   build:
@@ -42,3 +39,19 @@ jobs:
         uses: actions/attest-build-provenance@bd77c077858b8d561b7a36cbe48ef4cc642ca39d # tag=v2.2.2
         with:
           subject-path: '${{ github.workspace }}/dist'
+
+  publish:
+    if: ${{ (github.repository == 'gattjoe/OCSPChecker') }}
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    needs:
+      - build
+    steps:
+    - name: Download all the distribution package
+      uses: actions/download-artifact@cc203385981b70ca67e1cc392babf9cc229d5806 # tag=v4.1.9
+      with:
+        name: python-package-distributions
+        path: dist/
+    - name: Publish distribution 📦 to PyPI
+      uses: pypa/gh-action-pypi-publish@release/76f52bc884231f62b9a034ebfe128415bbaabdfc # tag=v1.12.4
