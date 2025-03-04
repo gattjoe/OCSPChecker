@@ -12,6 +12,10 @@ jobs:
   build:
     if: ${{ (github.repository == 'gattjoe/OCSPChecker') }}
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+      attestations: write
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # tag=v4.2.2
       - name: Set up Python 3.x
