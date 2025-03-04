@@ -1,6 +1,10 @@
-name: OCSPChecker
-permissions: {}
-on: [push]
+name: test
+permissions: {} # https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/controlling-permissions-for-github_token#defining-access-for-the-github_token-permissions
+on: 
+  push:
+    branches:
+      - '*'
+      - '!master'
 
 jobs:
   test:
@@ -44,7 +48,7 @@ jobs:
         if: ${{ always() }}
 
   build:
-    if: github.repository == 'gattjoe/OCSPChecker' # https://docs.github.com/en/actions/writing-workflows/workflow-syntax-for-github-actions#example-only-run-job-for-specific-repository
+    if: github.repository == 'gattjoe/OCSPChecker' && github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     needs: test
     steps:
