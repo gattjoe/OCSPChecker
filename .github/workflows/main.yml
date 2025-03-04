@@ -65,7 +65,7 @@ jobs:
           python -m pip install build twine
       - name: Build pypy package
         run: |
-          python -m build --user
+          python -m build
       - name: Check package
         run: |
           twine check dist/*
@@ -74,3 +74,7 @@ jobs:
         with:
           name: python-package-distributions
           path: dist/
+      - name: Attest
+        uses: actions/attest-build-provenance@bd77c077858b8d561b7a36cbe48ef4cc642ca39d # tag=v2.2.2
+        with:
+          subject-path: '${{ github.workspace }}/dist'
