@@ -1,7 +1,10 @@
 name: test and build
 permissions: {} # https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/controlling-permissions-for-github_token#defining-access-for-the-github_token-permissions
 on: 
-  push
+  push:
+    branches:
+      - '*'
+      - '!master'
 
 jobs:
   test:
