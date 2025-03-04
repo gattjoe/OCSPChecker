@@ -27,12 +27,12 @@ jobs:
       - name: Install tools
         run: |
           python -m pip install --upgrade pip setuptools wheel
+      - name: Install ocspchecker
+        run: |
+          python -m pip install .
       - name: Install pytest
         run: |
           python -m pip install -r dev-requirements.txt
-      - name: Install requirements
-        run: |
-          python -m pip install pyproject.toml
       - name: Run pytest
         run: |
           pytest tests/test_ocspchecker.py -v --junitxml=test-output-${{ matrix.os }}-python${{ matrix.python-version }}.xml
