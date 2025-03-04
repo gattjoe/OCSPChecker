@@ -1,3 +1,5 @@
+# .github/workflows/main.yml
+
 name: build
 permissions: {} # https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/controlling-permissions-for-github_token#defining-access-for-the-github_token-permissions
 on: 
@@ -47,11 +49,16 @@ jobs:
       id-token: write
     needs:
       - build
+    environment:
+      name: pypi
+      url: https://pypi.org/p/ocsp-checker
     steps:
-    - name: Download all the distribution package
+    - name: Download the distribution package
       uses: actions/download-artifact@cc203385981b70ca67e1cc392babf9cc229d5806 # tag=v4.1.9
       with:
         name: python-package-distributions
         path: dist/
     - name: Publish distribution 📦 to PyPI
       uses: pypa/gh-action-pypi-publish@76f52bc884231f62b9a034ebfe128415bbaabdfc # tag=v1.12.4
+      with:
+        verbose: true
