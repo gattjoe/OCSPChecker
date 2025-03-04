@@ -1,0 +1,49 @@
+name: test
+permissions: {} # https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/controlling-permissions-for-github_token#defining-access-for-the-github_token-permissions
+on: 
+  push:
+    branches:
+      - '*'
+      - '!master'
+  pull_request:
+
+jobs:
+  test:
+    name: ${{ matrix.os }}-python${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+        os:
+          [
+            ubuntu-20.04,
+            ubuntu-22.04,
+            windows-2022,
+            windows-2019,
+            macos-12,
+            macos-11,
+          ]
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # tag=v4.2.2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38 # tag=v5.4.0
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install tools
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+      - name: Install ocspchecker
+        run: |
+          python -m pip install .
+      - name: Install pytest
+        run: |
+          python -m pip install -r dev-requirements.txt
+      - name: Run pytest
+        run: |
+          pytest tests/test_ocspchecker.py -v --junitxml=test-output-${{ matrix.os }}-python${{ matrix.python-version }}.xml
+      - name: Upload test results
+        uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # tag=v4.6.1
+        with:
+          name: pytest-results for ${{ matrix.os }}-python${{ matrix.python-version }}
+          path: "**/test-output-${{ matrix.os }}-python${{ matrix.python-version }}.xml"
+        if: ${{ always() }}
