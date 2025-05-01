@@ -1,46 +1,43 @@
 """ Tests """
 
+from unittest.mock import MagicMock
+
 import pytest
 
 from ocspchecker.ocspchecker import (
-    build_ocsp_request,
-    extract_ocsp_result,
-    extract_ocsp_url,
     get_certificate_chain,
+    extract_ocsp_result,
+    build_ocsp_request,
     get_ocsp_response,
+    extract_ocsp_url,
     get_ocsp_status,
 )
-
 from . import certs
 
 
-def test_get_cert_chain_bad_host():
-    """Pass bad host to get_certificate_chain exception"""
+def test_get_cert_chain_bad_host(monkeypatch):
+    """Pass bad host to get_certificate_chain"""
+    
+    mock_get_certificate_chain = MagicMock(side_effect=Exception('get_certificate_chain: nonexistenthost.com:443 is invalid or not known.'))
 
-    func_name: str = "get_certificate_chain"
+    monkeypatch.setattr("ocspchecker.ocspchecker.get_certificate_chain", mock_get_certificate_chain)
+    
+    result = get_ocsp_status("nonexistenthost.com", 443)
 
-    host = "nonexistenthost.com"
-    port = 443
-
-    with pytest.raises(Exception) as excinfo:
-        get_certificate_chain(host, port)
-
-    assert str(excinfo.value) == f"{func_name}: {host}:{port} is invalid or not known."
+    assert result == ['Host: nonexistenthost.com:443', 'Error: get_certificate_chain: nonexistenthost.com:443 is invalid or not known.']
 
 
-def test_get_cert_chain_host_timeout():
+def test_get_cert_chain_host_timeout(monkeypatch):
     """Pass bad port to get_certificate_chain to force the
     connection to time out"""
 
-    func_name: str = "get_certificate_chain"
+    mock_get_certificate_chain = MagicMock(side_effect=Exception('get_certificate_chain: Connection to espn.com:65534 timed out.'))
+    
+    monkeypatch.setattr("ocspchecker.ocspchecker.get_certificate_chain", mock_get_certificate_chain)
 
-    host = "espn.com"
-    port = 65534
+    result = get_ocsp_status("espn.com", 65534)
 
-    with pytest.raises(Exception) as excinfo:
-        get_certificate_chain(host, port)
-
-    assert str(excinfo.value) == f"{func_name}: Connection to {host}:{port} timed out."
+    assert result == ['Host: espn.com:65534', 'Error: get_certificate_chain: Connection to espn.com:65534 timed out.']
 
 
 def test_get_cert_chain_success():

@@ -4,26 +4,26 @@
 
  For a short-term fix, I will use nassl to grab the full cert chain. """
 
-from pathlib import Path
-from socket import AF_INET, SOCK_STREAM, gaierror, socket, timeout
-from typing import List, Tuple, Union
-from urllib import error, request
+from socket import gaierror, timeout, socket, SOCK_STREAM, AF_INET
+from typing import Union, Tuple, List
 from urllib.parse import urlparse
+from urllib import request, error
+from pathlib import Path
 
-import certifi
-from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives import serialization
-from cryptography.hazmat.primitives.hashes import SHA1
-from cryptography.x509 import ExtensionNotFound, load_pem_x509_certificate, ocsp
-from cryptography.x509.oid import ExtensionOID
-from nassl._nassl import OpenSSLError
-from nassl.cert_chain_verifier import CertificateChainVerificationFailed
 from nassl.ssl_client import (
     ClientCertificateRequested,
-    OpenSslVerifyEnum,
     OpenSslVersionEnum,
+    OpenSslVerifyEnum,
     SslClient,
 )
+from cryptography.x509 import load_pem_x509_certificate, ocsp, ExtensionNotFound
+from nassl.cert_chain_verifier import CertificateChainVerificationFailed
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives.hashes import SHA1
+from cryptography.x509.oid import ExtensionOID
+from nassl._nassl import OpenSSLError
+import certifi
 
 from ocspchecker.utils.http_proxy_connect import http_proxy_connect
 
