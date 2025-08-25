@@ -5,7 +5,7 @@
  For a short-term fix, I will use nassl to grab the full cert chain. """
 
 from socket import gaierror, timeout, socket, SOCK_STREAM, AF_INET
-from typing import Union, Tuple, List
+from typing import List, Optional, Tuple, Union
 from urllib.parse import urlparse
 from urllib import request, error
 from pathlib import Path
@@ -32,9 +32,32 @@ class InitialConnectionError(Exception):
     """Custom exception class to differentiate between
     initial connection errors and OpenSSL errors"""
 
+class OcspError(Exception):
+    """Base exception for all OCSP-related errors"""
 
-class OcspResponderError(Exception):
+
+class OcspResponderError(OcspError):
     """Custom exception class to identify errors obtaining a response from a CA'a Responder"""
+
+
+class OCSPResponseError(OcspError):
+    """OCSP Response Status Codes - RFC 6960"""
+
+    def __init__(self, status_code, message: Optional[str] = None):
+        self.status_code = status_code
+        self.message = message or self._get_status_message(status_code)
+        super().__init__(f"OCSP Response Error: {self.message}")
+
+    def _get_status_message(self, status_code):
+        messages = {
+            1: "Malformed Request",
+            2: "Internal Error",
+            3: "Try Later",
+            # Note: 4 is not used in the RFC
+            5: "Signature Required",
+            6: "Unauthorized"
+        }
+        return messages.get(status_code, "Unknown Error")
 
 
 openssl_errors: dict = {
@@ -306,20 +329,9 @@ def extract_ocsp_result(ocsp_response):
 
     try:
         ocsp_response = ocsp.load_der_ocsp_response(ocsp_response)
-        # OCSP Response Status here:
-        # https://cryptography.io/en/latest/_modules/cryptography/x509/ocsp/#OCSPResponseStatus
         # A status of 0 == OCSPResponseStatus.SUCCESSFUL
-        if str(ocsp_response.response_status.value) != "0":
-            # This will return one of five errors, which means connecting
-            # to the OCSP Responder failed for one of the below reasons:
-            # MALFORMED_REQUEST = 1
-            # INTERNAL_ERROR = 2
-            # TRY_LATER = 3
-            # SIG_REQUIRED = 5
-            # UNAUTHORIZED = 6
-            ocsp_response = str(ocsp_response.response_status)
-            ocsp_response = ocsp_response.split(".")
-            raise Exception(f"{func_name}: OCSP Request Error: {ocsp_response[1]}")
+        if ocsp_response.response_status.value != 0:
+            raise OCSPResponseError(ocsp_response.response_status.value)
 
         certificate_status = str(ocsp_response.certificate_status)
         certificate_status = certificate_status.split(".")

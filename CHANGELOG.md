@@ -85,3 +85,7 @@
 - Removed support for Python 3.8 and added support for Python 3.13
 - Update dependencies and rely soley on pyproject.toml
 - Add CODEOWNERS
+
+# v2.0.1
+- Refactored some tests with mock
+- Added OCSPResponseError class and refactored error handling

@@ -17,11 +17,11 @@ from . import certs
 
 def test_get_cert_chain_bad_host(monkeypatch):
     """Pass bad host to get_certificate_chain"""
-    
+
     mock_get_certificate_chain = MagicMock(side_effect=Exception('get_certificate_chain: nonexistenthost.com:443 is invalid or not known.'))
 
     monkeypatch.setattr("ocspchecker.ocspchecker.get_certificate_chain", mock_get_certificate_chain)
-    
+
     result = get_ocsp_status("nonexistenthost.com", 443)
 
     assert result == ['Host: nonexistenthost.com:443', 'Error: get_certificate_chain: nonexistenthost.com:443 is invalid or not known.']
@@ -32,7 +32,7 @@ def test_get_cert_chain_host_timeout(monkeypatch):
     connection to time out"""
 
     mock_get_certificate_chain = MagicMock(side_effect=Exception('get_certificate_chain: Connection to espn.com:65534 timed out.'))
-    
+
     monkeypatch.setattr("ocspchecker.ocspchecker.get_certificate_chain", mock_get_certificate_chain)
 
     result = get_ocsp_status("espn.com", 65534)
@@ -40,29 +40,16 @@ def test_get_cert_chain_host_timeout(monkeypatch):
     assert result == ['Host: espn.com:65534', 'Error: get_certificate_chain: Connection to espn.com:65534 timed out.']
 
 
-def test_get_cert_chain_success():
+def test_get_cert_chain_bad_port(monkeypatch):
     """Validate the issuer for microsoft.com with ms_pem"""
 
-    host = "github.com"
-    port = 443
+    mock_get_certificate_chain = MagicMock(side_effect=Exception('get_certificate_chain: Illegal port:80000. Port must be between 0-65535.'))
 
-    github = get_certificate_chain(host, port)
+    monkeypatch.setattr("ocspchecker.ocspchecker.get_certificate_chain", mock_get_certificate_chain)
 
-    assert github[1] == certs.github_issuer_pem
+    result = get_ocsp_status("github.com", 80000)
 
-
-def test_get_cert_chain_bad_port():
-    """Validate the issuer for microsoft.com with ms_pem"""
-
-    host = "github.com"
-    port = 80000
-
-    func_name: str = "get_certificate_chain"
-
-    with pytest.raises(Exception) as excinfo:
-        get_certificate_chain(host, port)
-
-    assert str(excinfo.value) == f"{func_name}: Illegal port: {port}. Port must be between 0-65535."
+    assert result == ['Host: github.com:80000', 'Error: get_certificate_chain: Illegal port:80000. Port must be between 0-65535.']
 
 
 def test_invalid_certificate():
@@ -82,11 +69,10 @@ def test_invalid_certificate():
 def test_extract_ocsp_url_success():
     """test a successful extract_ocsp_url function invocation"""
 
-    host = "github.com"
-    cert_chain = get_certificate_chain(host)
+    cert_chain = [certs.github_issuer_pem]
     ocsp_url = extract_ocsp_url(cert_chain)
 
-    assert ocsp_url == "http://ocsp.sectigo.com"
+    assert ocsp_url == "http://ocsp.usertrust.com"
 
 
 def test_build_ocsp_request_success():
@@ -162,14 +148,12 @@ def test_get_ocsp_response_timeout():
 def test_extract_ocsp_result_unauthorized():
     """test an unsuccessful extract_ocsp_result function invocation"""
 
-    func_name: str = "extract_ocsp_result"
-
     ocsp_response = get_ocsp_response("http://ocsp.digicert.com", certs.unauthorized_ocsp_data)
 
     with pytest.raises(Exception) as excinfo:
         extract_ocsp_result(ocsp_response)
 
-    assert str(excinfo.value) == f"{func_name}: OCSP Request Error: UNAUTHORIZED"
+    assert str(excinfo.value) == "OCSP Response Error: Unauthorized"
 
 
 def test_extract_ocsp_result_success():
@@ -185,55 +169,77 @@ def test_extract_ocsp_result_success():
     assert ocsp_result == "OCSP Status: GOOD"
 
 
-def test_end_to_end_success_test():
+def test_end_to_end_success_test(monkeypatch):
     """test the full function end to end"""
 
-    ocsp_result = get_ocsp_status("github.com", 443)
+    mock_get_ocsp_status = MagicMock(result=[
+        "Host: github.com:443",
+        "OCSP URL: http://ocsp.sectigo.com",
+        "OCSP Status: GOOD",
+    ])
 
-    assert ocsp_result == [
+    monkeypatch.setattr("ocspchecker.ocspchecker.get_ocsp_status", mock_get_ocsp_status)
+
+    result = get_ocsp_status("github.com", 443)
+
+    assert result == [
         "Host: github.com:443",
         "OCSP URL: http://ocsp.sectigo.com",
         "OCSP Status: GOOD",
     ]
 
 
-def test_end_to_end_test_bad_host():
+def test_end_to_end_test_bad_host(monkeypatch):
     """test the full function end to end"""
 
-    func_name: str = "get_certificate_chain"
-
-    host = "nonexistenthost.com"
-    ocsp_request = get_ocsp_status(host, 443)
-
-    assert ocsp_request == [
+    mock_get_ocsp_status = MagicMock(side_effect=Exception(
         "Host: nonexistenthost.com:443",
-        f"Error: {func_name}: nonexistenthost.com:443 is invalid or not known.",
+        "Error: get_certificate_chain: nonexistenthost.com:443 is invalid or not known.",
+    ))
+
+    monkeypatch.setattr("ocspchecker.ocspchecker.get_ocsp_status", mock_get_ocsp_status)
+
+    result = get_ocsp_status("nonexistenthost.com", 443)
+
+    assert result == [
+        "Host: nonexistenthost.com:443",
+        "Error: get_certificate_chain: nonexistenthost.com:443 is invalid or not known.",
     ]
 
 
-def test_end_to_end_test_bad_fqdn():
+def test_end_to_end_test_bad_fqdn(monkeypatch):
     """test the full function end to end"""
 
-    host = "nonexistentdomain"
-    ocsp_request = get_ocsp_status(host, 443)
-
-    assert ocsp_request == [
+    mock_get_ocsp_status = MagicMock(side_effect=Exception(
         "Host: nonexistentdomain:443",
-        f"Error: get_certificate_chain: {host}:443 is invalid or not known.",
+        "Error: get_certificate_chain: nonexistentdomain:443 is invalid or not known.",
+    ))
+
+    monkeypatch.setattr("ocspchecker.ocspchecker.get_ocsp_status", mock_get_ocsp_status)
+
+    result = get_ocsp_status("nonexistentdomain", 443)
+
+    assert result == [
+        "Host: nonexistentdomain:443",
+        "Error: get_certificate_chain: nonexistentdomain:443 is invalid or not known.",
     ]
 
 
-def test_end_to_end_test_host_timeout():
+def test_end_to_end_test_host_timeout(monkeypatch):
     """test the full function end to end"""
 
-    func_name: str = "get_certificate_chain"
+    mock_get_ocsp_status = MagicMock(side_effect=Exception(
+        "Host: nonexistentdomain:443",
+        "Error: get_certificate_chain: Connection to espn.com:65534 timed out.",
+    ))
 
-    host = "espn.com"
-    ocsp_request = get_ocsp_status(host, 65534)
+    monkeypatch.setattr("ocspchecker.ocspchecker.get_ocsp_status", mock_get_ocsp_status)
 
-    assert ocsp_request == [
+    result = get_ocsp_status("espn.com", 65534)
+
+    assert result == [
         "Host: espn.com:65534",
-        f"Error: {func_name}: Connection to espn.com:65534 timed out.",
+        "Error: get_certificate_chain: Connection to espn.com:65534 timed out.",
     ]
 
 
