@@ -89,3 +89,5 @@
 # v2.0.1
 - Refactored some tests with mock
 - Added OCSPResponseError class and refactored error handling
+
+# v2.0.2

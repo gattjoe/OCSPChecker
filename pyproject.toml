@@ -4,12 +4,12 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ocsp-checker"
-version = "2.0.1"
+version = "2.0.2"
 description = "Library used to check the OCSP revocation status for a x509 digital certificate."
 dependencies = ["cryptography>=45.0", "nassl>=5.3", "certifi"]
 
 readme = { file = "README.md", content-type = "text/markdown" }
-authors = [{ name = "Joe Gatt", email = "gattjoseph@hotmail.com" }]
+authors = [{ name = "Joe Gatt", email = "gattjoe@users.noreply.github.com" }]
 license = { file = "LICENSE.txt" }
 classifiers = [
     "License :: OSI Approved :: Apache Software License",

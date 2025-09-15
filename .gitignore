@@ -153,4 +153,5 @@ test-output.xml
 # vim swap
 *.swp
 
+.claude
 Claude.md
