@@ -89,3 +89,8 @@
 # v2.0.1
 - Refactored some tests with mock
 - Added OCSPResponseError class and refactored error handling
+
+# v2.02
+- Removed support for Python 3.9 and added support for Python 3.14
+- Updated GitHub Actions and CI
+- Enhanced input validation
