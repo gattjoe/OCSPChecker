@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ocsp-checker"
-version = "2.0.1"
+version = "2.0.2"
 description = "Library used to check the OCSP revocation status for a x509 digital certificate."
 dependencies = ["cryptography>=45.0", "nassl>=5.3", "certifi"]
 
@@ -14,14 +14,14 @@ license = { file = "LICENSE.txt" }
 classifiers = [
     "License :: OSI Approved :: Apache Software License",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
 ]
 keywords = ["ssl, tls, ocsp, python, security"]
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 
 [project.urls]
 "homepage" = "https://github.com/gattjoe/OCSPChecker"
@@ -37,7 +37,7 @@ where = ["."]
 
 [tool.black]
 line-length = 100
-target-version = ["py39", "py310", "py311", "py312", "py313"]
+target-version = ["py310", "py311", "py312", "py313", "py314"]
 
 [tool.isort]
 ensure_newline_before_comments = true

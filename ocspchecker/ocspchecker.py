@@ -21,7 +21,7 @@ from nassl.cert_chain_verifier import CertificateChainVerificationFailed
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.hashes import SHA1
-from cryptography.x509.oid import ExtensionOID
+from cryptography.x509.oid import ExtensionOID, AuthorityInformationAccessOID
 from nassl._nassl import OpenSSLError
 import certifi
 
@@ -241,10 +241,9 @@ def extract_ocsp_url(cert_chain: List[str]) -> str:
             ExtensionOID.AUTHORITY_INFORMATION_ACCESS
         ).value
 
-        # pylint: disable=protected-access
         for aia_method in iter((aia_extension)):
-            if aia_method.__getattribute__("access_method")._name == "OCSP":
-                ocsp_url = aia_method.__getattribute__("access_location").value
+            if aia_method.access_method == AuthorityInformationAccessOID.OCSP:
+                ocsp_url = aia_method.access_location.value
 
         if ocsp_url == "":
             raise ValueError(f"{func_name}: OCSP URL missing from Certificate AIA Extension.")
@@ -290,6 +289,11 @@ def get_ocsp_response(
 
     func_name: str = "get_ocsp_response"
     ocsp_response = None
+
+    if not ocsp_url.lower().startswith(("http://", "https://")):
+        raise OcspResponderError(
+            f"{func_name}: Unsupported scheme in OCSP URL: {ocsp_url!r}"
+        )
 
     try:
         ocsp_request = request.Request(
@@ -350,4 +354,4 @@ def verify_host(host: str) -> str:
     if host_candidate == "":
         host_candidate = parsed_name.path
 
-    return host_candidate
+    return host_candidate.replace("\r", "").replace("\n", "")

@@ -111,7 +111,7 @@ def test_get_ocsp_response_bad_url_format():
         get_ocsp_response(ocsp_url, ocsp_request_data)
 
     assert str(excinfo.value) == (
-        f"{func_name}: Connection Error to {ocsp_url}. unknown url type: {ocsp_url!r}"
+        f"{func_name}: Unsupported scheme in OCSP URL: {ocsp_url!r}"
     )
 
 
