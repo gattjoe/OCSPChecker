@@ -17,12 +17,12 @@ from nassl.ssl_client import (
     OpenSslVerifyEnum,
     SslClient,
 )
-from cryptography.x509 import load_pem_x509_certificate, ocsp, ExtensionNotFound
 from nassl.cert_chain_verifier import CertificateChainVerificationFailed
+from nassl._nassl import OpenSSLError
+from cryptography.x509 import load_pem_x509_certificate, ocsp, ExtensionNotFound
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.hashes import SHA1
 from cryptography.x509.oid import ExtensionOID, AuthorityInformationAccessOID
-from nassl._nassl import OpenSSLError
 import certifi
 
 
@@ -173,7 +173,9 @@ def get_certificate_chain(
         ) from None
 
     except ConnectionRefusedError:
-        raise InitialConnectionError(f"get_certificate_chain: Connection to {host}:{port} refused.") from None
+        raise InitialConnectionError(
+            f"get_certificate_chain: Connection to {host}:{port} refused."
+        ) from None
 
     except (IOError, OSError) as err:
         raise InitialConnectionError(
@@ -200,13 +202,19 @@ def get_certificate_chain(
         cert_chain = ssl_client.get_verified_chain()
 
     except IOError:
-        raise ValueError(f"get_certificate_chain: {host} did not respond to the Client Hello.") from None
+        raise ValueError(
+            f"get_certificate_chain: {host} did not respond to the Client Hello."
+        ) from None
 
     except CertificateChainVerificationFailed:
-        raise ValueError(f"get_certificate_chain: Certificate Verification failed for {host}.") from None
+        raise ValueError(
+            f"get_certificate_chain: Certificate Verification failed for {host}."
+        ) from None
 
     except ClientCertificateRequested:
-        raise ValueError(f"get_certificate_chain: Client Certificate Requested for {host}.") from None
+        raise ValueError(
+            f"get_certificate_chain: Client Certificate Requested for {host}."
+        ) from None
 
     except OpenSSLError as err:
         for key, value in openssl_errors.items():
@@ -263,7 +271,7 @@ def build_ocsp_request(cert_chain: List[str]) -> bytes:
         issuer_cert = load_pem_x509_certificate(str.encode(cert_chain[1]))
 
     except ValueError:
-        raise Exception("build_ocsp_request: Unable to load x509 certificate.") from None
+        raise ValueError("build_ocsp_request: Unable to load x509 certificate.") from None
 
     # Build OCSP request
     builder = ocsp.OCSPRequestBuilder()
@@ -304,18 +312,24 @@ def get_ocsp_response(
 
     except error.URLError as err:
         if isinstance(err.reason, timeout):
-            raise OcspResponderError(f"get_ocsp_response: Request timeout for {ocsp_url}")
+            raise OcspResponderError(f"get_ocsp_response: Request timeout for {ocsp_url}") from err
 
         if isinstance(err.reason, gaierror):
-            raise OcspResponderError(f"get_ocsp_response: {ocsp_url} is invalid or not known.")
+            raise OcspResponderError(
+                f"get_ocsp_response: {ocsp_url} is invalid or not known."
+            ) from err
 
-        raise OcspResponderError(f"get_ocsp_response: Connection Error to {ocsp_url}. {str(err)}")
+        raise OcspResponderError(
+            f"get_ocsp_response: Connection Error to {ocsp_url}. {str(err)}"
+        ) from err
 
     except ValueError as err:
-        raise OcspResponderError(f"get_ocsp_response: Connection Error to {ocsp_url}. {str(err)}")
+        raise OcspResponderError(
+            f"get_ocsp_response: Connection Error to {ocsp_url}. {str(err)}"
+        ) from err
 
-    except timeout:
-        raise OcspResponderError(f"get_ocsp_response: Request timeout for {ocsp_url}")
+    except timeout as err:
+        raise OcspResponderError(f"get_ocsp_response: Request timeout for {ocsp_url}") from err
 
     return ocsp_response
 

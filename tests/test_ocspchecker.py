@@ -1,6 +1,8 @@
 """ Tests """
 
 from unittest.mock import MagicMock
+from urllib.error import URLError
+from socket import gaierror, timeout
 
 import pytest
 
@@ -78,8 +80,7 @@ def test_extract_ocsp_url_success():
 def test_build_ocsp_request_success():
     """test a successful build_ocsp_request function invocation"""
 
-    host = "github.com"
-    cert_chain = get_certificate_chain(host)
+    cert_chain = [certs.github_leaf_pem, certs.github_intermediate_pem]
     ocsp_request_data = build_ocsp_request(cert_chain)
 
     assert ocsp_request_data == certs.github_ocsp_data
@@ -115,7 +116,7 @@ def test_get_ocsp_response_bad_url_format():
     )
 
 
-def test_get_ocsp_response_connection_error():
+def test_get_ocsp_response_connection_error(monkeypatch):
     """test an unsuccessful get_ocsp_response function invocation
     with a bad url input"""
 
@@ -124,13 +125,18 @@ def test_get_ocsp_response_connection_error():
     ocsp_url = "http://blahhhhhhhh.com"
     ocsp_request_data = b"dummydata"
 
+    monkeypatch.setattr(
+        "ocspchecker.ocspchecker.request.urlopen",
+        MagicMock(side_effect=URLError(gaierror())),
+    )
+
     with pytest.raises(Exception) as excinfo:
         get_ocsp_response(ocsp_url, ocsp_request_data)
 
     assert str(excinfo.value) == f"{func_name}: {ocsp_url} is invalid or not known."
 
 
-def test_get_ocsp_response_timeout():
+def test_get_ocsp_response_timeout(monkeypatch):
     """test an unsuccessful get_ocsp_response function invocation
     with timeout"""
 
@@ -138,6 +144,11 @@ def test_get_ocsp_response_timeout():
 
     ocsp_url = "http://blah.com:65534"
     ocsp_request_data = b"dummydata"
+
+    monkeypatch.setattr(
+        "ocspchecker.ocspchecker.request.urlopen",
+        MagicMock(side_effect=timeout()),
+    )
 
     with pytest.raises(Exception) as excinfo:
         get_ocsp_response(ocsp_url, ocsp_request_data)
@@ -148,29 +159,23 @@ def test_get_ocsp_response_timeout():
 def test_extract_ocsp_result_unauthorized():
     """test an unsuccessful extract_ocsp_result function invocation"""
 
-    ocsp_response = get_ocsp_response("http://ocsp.digicert.com", certs.unauthorized_ocsp_data)
-
     with pytest.raises(Exception) as excinfo:
-        extract_ocsp_result(ocsp_response)
+        extract_ocsp_result(certs.unauthorized_ocsp_response_data)
 
     assert str(excinfo.value) == "OCSP Response Error: Unauthorized"
 
 
 def test_extract_ocsp_result_success():
-    """test an unsuccessful extract_ocsp_result function invocation"""
+    """test a successful extract_ocsp_result function invocation"""
 
-    cert_chain = get_certificate_chain("github.com", 443)
-    ocsp_url = extract_ocsp_url(cert_chain)
-    ocsp_request = build_ocsp_request(cert_chain)
-    ocsp_response = get_ocsp_response(ocsp_url, ocsp_request)
-
-    ocsp_result = extract_ocsp_result(ocsp_response)
+    ocsp_result = extract_ocsp_result(certs.good_ocsp_data)
 
     assert ocsp_result == "OCSP Status: GOOD"
 
 
-def test_end_to_end_success_test(monkeypatch):
-    """test the full function end to end"""
+@pytest.fixture
+def mock_good_pipeline(monkeypatch):
+    """Mock get_ocsp_status's internal calls to simulate a successful GOOD response"""
 
     monkeypatch.setattr(
         "ocspchecker.ocspchecker.get_certificate_chain", MagicMock(return_value=["leaf", "issuer"])
@@ -189,6 +194,10 @@ def test_end_to_end_success_test(monkeypatch):
         "ocspchecker.ocspchecker.extract_ocsp_result",
         MagicMock(return_value="OCSP Status: GOOD"),
     )
+
+
+def test_end_to_end_success_test(mock_good_pipeline):
+    """test the full function end to end"""
 
     result = get_ocsp_status("github.com", 443)
 
@@ -277,7 +286,7 @@ def test_bad_port_typeerror():
     ]
 
 
-def test_no_port_supplied():
+def test_no_port_supplied(mock_good_pipeline):
     """Validate that when no port is supplied, the default of 443 is used"""
 
     host = "github.com"
@@ -290,7 +299,7 @@ def test_no_port_supplied():
     ]
 
 
-def test_strip_http_from_host():
+def test_strip_http_from_host(mock_good_pipeline):
     """Validate stripping http from host"""
 
     host = "http://github.com"
@@ -303,7 +312,7 @@ def test_strip_http_from_host():
     ]
 
 
-def test_strip_https_from_host():
+def test_strip_https_from_host(mock_good_pipeline):
     """Validate stripping https from host"""
 
     host = "https://github.com"

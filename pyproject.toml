@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ocsp-checker"
-version = "2.0.3"
+version = "2.0.4"
 description = "Library used to check the OCSP revocation status for a x509 digital certificate."
 dependencies = ["cryptography>=45.0", "nassl>=5.3", "certifi"]
 
@@ -37,6 +37,16 @@ where = ["."]
 [tool.black]
 line-length = 100
 target-version = ["py310", "py311", "py312", "py313", "py314"]
+
+[tool.pylint.main]
+fail-under = 9.0
+extension-pkg-allow-list = ["nassl._nassl"]
+
+[tool.pylint."messages control"]
+enable = ["c-extension-no-member"]
+
+[tool.pylint.format]
+max-line-length = 100
 
 [tool.pyright]
 root = ["ocspchecker"]

@@ -98,4 +98,7 @@
 # v2.03
 - Removed devcontainer and Dockerfile
 - Ran ponytail against the repo and removed custom proxy code
--
+
+# v2.04
+- Ran pylint and cleaned up code
+- Refactored some tests with mock

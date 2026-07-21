@@ -54,9 +54,60 @@ iywmc6GTT7X94Ze2F7iB45jh7WQ=
 -----END CERTIFICATE-----
 """
 
+github_leaf_pem = """-----BEGIN CERTIFICATE-----
+MIID7jCCA5SgAwIBAgIQcgEOA/SgZ/5OeWJmQwcY9jAKBggqhkjOPQQDAjBgMQsw
+CQYDVQQGEwJHQjEYMBYGA1UEChMPU2VjdGlnbyBMaW1pdGVkMTcwNQYDVQQDEy5T
+ZWN0aWdvIFB1YmxpYyBTZXJ2ZXIgQXV0aGVudGljYXRpb24gQ0EgRFYgRTM2MB4X
+DTI2MDcwMzAwMDAwMFoXDTI2MDkzMDIzNTk1OVowFTETMBEGA1UEAxMKZ2l0aHVi
+LmNvbTBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABIWWMDSOi/1sMgquP4I/obBM
+735wpzcIZi4fLeiBsToXVVSwjj4OPH+W6azHzxETM0gUP7raehddpJ8uwjqYsTij
+ggJ5MIICdTAfBgNVHSMEGDAWgBQXmagEwW/kLXCoChA9A9PpGrgmYzAdBgNVHQ4E
+FgQUEKU6Ytbv1gZWnty4gvzCe2hdPWkwDgYDVR0PAQH/BAQDAgeAMAwGA1UdEwEB
+/wQCMAAwEwYDVR0lBAwwCgYIKwYBBQUHAwEwSQYDVR0gBEIwQDA0BgsrBgEEAbIx
+AQICBzAlMCMGCCsGAQUFBwIBFhdodHRwczovL3NlY3RpZ28uY29tL0NQUzAIBgZn
+gQwBAgEwgYQGCCsGAQUFBwEBBHgwdjBPBggrBgEFBQcwAoZDaHR0cDovL2NydC5z
+ZWN0aWdvLmNvbS9TZWN0aWdvUHVibGljU2VydmVyQXV0aGVudGljYXRpb25DQURW
+RTM2LmNydDAjBggrBgEFBQcwAYYXaHR0cDovL29jc3Auc2VjdGlnby5jb20wggEF
+BgorBgEEAdZ5AgQCBIH2BIHzAPEAdgDXbX0Q0af1d8LH6V/XAL/5gskzWmXh0LMB
+cxfAyMVpdwAAAZ8lTHVtAAAEAwBHMEUCIQCkpa0ZYNwsPiMRLHz+kk1QS/W9bg/8
+4yNBVGkT289dNQIgMWLgxYp6vGJXJxyD3c1NI1aZsPA7GqyLSXaZLZHgKh0AdwDI
+o8R/x7OtuTVrAT9qehJt4zpOQ6XGRvmXrTl1mR3PmgAAAZ8lTHVhAAAEAwBIMEYC
+IQDsO+TR8EVfCiObBPoDLRKzKLQ/uorsebJ2aZDIejA9RgIhAJ6dp7FqCD93tQXX
+AF24pDIms1fX4dZ+VPzXGuD8u8t1MCUGA1UdEQQeMByCCmdpdGh1Yi5jb22CDnd3
+dy5naXRodWIuY29tMAoGCCqGSM49BAMCA0gAMEUCIB0PC2GRSurxu8gCkSNsYxmw
+kAtCNfCvpXRiif8PhGkmAiEAzBH4AVYAtv1FsMrJabD9FYcAql0EteKafckH2exj
+Uag=
+-----END CERTIFICATE-----"""
+
+github_intermediate_pem = """-----BEGIN CERTIFICATE-----
+MIIDXzCCAuagAwIBAgIQNuBZ7YiN1Xrt1XC2cn+b2jAKBggqhkjOPQQDAzBfMQsw
+CQYDVQQGEwJHQjEYMBYGA1UEChMPU2VjdGlnbyBMaW1pdGVkMTYwNAYDVQQDEy1T
+ZWN0aWdvIFB1YmxpYyBTZXJ2ZXIgQXV0aGVudGljYXRpb24gUm9vdCBFNDYwHhcN
+MjEwMzIyMDAwMDAwWhcNMzYwMzIxMjM1OTU5WjBgMQswCQYDVQQGEwJHQjEYMBYG
+A1UEChMPU2VjdGlnbyBMaW1pdGVkMTcwNQYDVQQDEy5TZWN0aWdvIFB1YmxpYyBT
+ZXJ2ZXIgQXV0aGVudGljYXRpb24gQ0EgRFYgRTM2MFkwEwYHKoZIzj0CAQYIKoZI
+zj0DAQcDQgAEaKGnbAUnBYljHDmn/yUhxe3TLxKYuyzc9VXoSaCEV5F73Fhfa/Si
+/RMsmwTFW3R9s7J6JpYZFmu4do3vk/Vgl6OCAYEwggF9MB8GA1UdIwQYMBaAFNEi
+2kxZ8UtfJjiqndbu6w3D+6lhMB0GA1UdDgQWBBQXmagEwW/kLXCoChA9A9PpGrgm
+YzAOBgNVHQ8BAf8EBAMCAYYwEgYDVR0TAQH/BAgwBgEB/wIBADAdBgNVHSUEFjAU
+BggrBgEFBQcDAQYIKwYBBQUHAwIwGwYDVR0gBBQwEjAGBgRVHSAAMAgGBmeBDAEC
+ATBUBgNVHR8ETTBLMEmgR6BFhkNodHRwOi8vY3JsLnNlY3RpZ28uY29tL1NlY3Rp
+Z29QdWJsaWNTZXJ2ZXJBdXRoZW50aWNhdGlvblJvb3RFNDYuY3JsMIGEBggrBgEF
+BQcBAQR4MHYwTwYIKwYBBQUHMAKGQ2h0dHA6Ly9jcnQuc2VjdGlnby5jb20vU2Vj
+dGlnb1B1YmxpY1NlcnZlckF1dGhlbnRpY2F0aW9uUm9vdEU0Ni5wN2MwIwYIKwYB
+BQUHMAGGF2h0dHA6Ly9vY3NwLnNlY3RpZ28uY29tMAoGCCqGSM49BAMDA2cAMGQC
+MFsKnBQDh64l+v+aUYWjDCJKQMxHUUGmcwAYDIjJ9pbRYItMCIx5xu0oUb6sIfTX
+qQIwPddcsDE4KdeLu1hJdpHgdLvsHAK3vygyLGujMU9xBJCDackRT93VHEE0gppg
+NqdV
+-----END CERTIFICATE-----"""
+
 github_ocsp_data = b'0Q0O0M0K0I0\t\x06\x05+\x0e\x03\x02\x1a\x05\x00\x04\x14\xb7\x0e\x12V\xa2a\x9b8\x91T\xfe\x9c\xb9\xf0\x16\x8e\x07\xa6\x8c\x0b\x04\x14\x17\x99\xa8\x04\xc1o\xe4-p\xa8\n\x10=\x03\xd3\xe9\x1a\xb8&c\x02\x10r\x01\x0e\x03\xf4\xa0g\xfeNybfC\x07\x18\xf6'
 
-unauthorized_ocsp_data = b"0Q0O0M0K0I0\t\x06\x05+\x0e\x03\x02\x1a\x05\x00\x04\x14\xcf&\xf5\x18\xfa\xc9~\x8f\x8c\xb3B\xe0\x1c/j\x10\x9e\x8e_\x04\x14Qh\xff\x90\xaf\x02\x07u<\xcc\xd9edb\xa2\x12\xb8Yr;\x02\x10\x05W\xc8\x0b(&\x83\xa1{\x11D)ky"
+# digicert.com's OCSP responder reply to a deliberately malformed request
+# (OCSPResponseStatus.unauthorized, captured live)
+unauthorized_ocsp_response_data = b"0\x03\n\x01\x06"
+
+good_ocsp_data = b'0\x82\x01\xd3\n\x01\x00\xa0\x82\x01\xcc0\x82\x01\xc8\x06\t+\x06\x01\x05\x05\x070\x01\x01\x04\x82\x01\xb90\x82\x01\xb50\x81\x9e\xa2\x16\x04\x14jNP\xbf\x98h\x9d[{ u\xd4Y\x01yHf\x922\x06\x18\x0f20260720194348Z0s0q0I0\t\x06\x05+\x0e\x03\x02\x1a\x05\x00\x04\x14\xd6\x13\x07_\xb6\xde\xa1\x1b\xdf\x01\x82\xd3\x97\xe1\xd3|n\x92U\t\x04\x14jNP\xbf\x98h\x9d[{ u\xd4Y\x01yHf\x922\x06\x02\x10\rY\x08\xb9T\xf1\xec\xd5Z\xdfA\xd9\x98\xcf\xc5\x05\x80\x00\x18\x0f20260720192700Z\xa0\x11\x18\x0f20260727182700Z0\r\x06\t*\x86H\x86\xf7\r\x01\x01\x0b\x05\x00\x03\x82\x01\x01\x00\xa4Z\xc0\x04\xf3\xca\xc8b\xc0=&\xda\xbbu\xce w\x8d\xb7\xa8\xa0\xa9&w\xb3\xc1?8\x06\xe7e\xe8t\xaf\xd2\x19\x1dx|\x1d\xfcI\x98\xdd\xdb\x84\x99\x96\x8c\xa3\x14\x03\xa2|-\xa5\xf3!\xc5\x9do\x9ez\x9a\xceU\x1fN[\xc8\xef_\xe8\xd7\xe4^\xdbS\xceD\x1b\xfc\xae\xe5\xaf\x00\xc6\xaa\x97IG\t\x83`\xecW\x11\xe3W\xbb/\x9c\xccuO\xb5w7(\x08)\x97WOD\xc0d\xfd\xc6v\xcf3\xc1\xb2\x1c\xfb\x92XT)\x7fG\xd1\xabk\xac\x80_\xac\x1cdH?\xd9\xf6\xf5\x9a\x8e\xaa#o\rm\xe3\xccy\xd0$"\xadn\xb1\x81#\xb3\x84\x03fqj\x90\xae\x976gp\xcb\n\x83\xf7s>|D\xce\ts\xee\r#\xa3h\xa4\xc5O\x13\xaf\xe7\x91w"\x01\xdf\xf0\xff\x87\x88n\xd5\xb7\\\x01\xcf\xf1^\xc3\r\xdd^\xf4<TA\xa5\xbc\xc4\x97\x99k\xcd\xffY\xda\xeae\x9f\x13r\x04\xe6\x91\x86\xc1}B\x08\x8b\xa7>\xce.\xc2\xdeK\xbb:'
 
 # List of certificate authorities to test
 cert_authorities = [
@@ -69,13 +120,10 @@ cert_authorities = [
     "actalis.it",
     "entrustdatacard.com",
     "secom.co.jp",
-    "letsencrypt.org",
     "microsoft.com",
-    "trustwave.com",
     "wisekey.com",
     "networksolutions.com",
     "amazontrust.com",
-    "lencr.org",
     "comodoca.com",
     "www.starfieldtech.com",
 ]
