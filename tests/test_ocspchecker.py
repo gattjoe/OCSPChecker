@@ -172,13 +172,23 @@ def test_extract_ocsp_result_success():
 def test_end_to_end_success_test(monkeypatch):
     """test the full function end to end"""
 
-    mock_get_ocsp_status = MagicMock(result=[
-        "Host: github.com:443",
-        "OCSP URL: http://ocsp.sectigo.com",
-        "OCSP Status: GOOD",
-    ])
-
-    monkeypatch.setattr("ocspchecker.ocspchecker.get_ocsp_status", mock_get_ocsp_status)
+    monkeypatch.setattr(
+        "ocspchecker.ocspchecker.get_certificate_chain", MagicMock(return_value=["leaf", "issuer"])
+    )
+    monkeypatch.setattr(
+        "ocspchecker.ocspchecker.extract_ocsp_url",
+        MagicMock(return_value="http://ocsp.sectigo.com"),
+    )
+    monkeypatch.setattr(
+        "ocspchecker.ocspchecker.build_ocsp_request", MagicMock(return_value=b"dummy-request")
+    )
+    monkeypatch.setattr(
+        "ocspchecker.ocspchecker.get_ocsp_response", MagicMock(return_value=b"dummy-response")
+    )
+    monkeypatch.setattr(
+        "ocspchecker.ocspchecker.extract_ocsp_result",
+        MagicMock(return_value="OCSP Status: GOOD"),
+    )
 
     result = get_ocsp_status("github.com", 443)
 
@@ -192,12 +202,12 @@ def test_end_to_end_success_test(monkeypatch):
 def test_end_to_end_test_bad_host(monkeypatch):
     """test the full function end to end"""
 
-    mock_get_ocsp_status = MagicMock(side_effect=Exception(
-        "Host: nonexistenthost.com:443",
-        "Error: get_certificate_chain: nonexistenthost.com:443 is invalid or not known.",
-    ))
-
-    monkeypatch.setattr("ocspchecker.ocspchecker.get_ocsp_status", mock_get_ocsp_status)
+    monkeypatch.setattr(
+        "ocspchecker.ocspchecker.get_certificate_chain",
+        MagicMock(side_effect=Exception(
+            "get_certificate_chain: nonexistenthost.com:443 is invalid or not known."
+        )),
+    )
 
     result = get_ocsp_status("nonexistenthost.com", 443)
 
@@ -210,12 +220,12 @@ def test_end_to_end_test_bad_host(monkeypatch):
 def test_end_to_end_test_bad_fqdn(monkeypatch):
     """test the full function end to end"""
 
-    mock_get_ocsp_status = MagicMock(side_effect=Exception(
-        "Host: nonexistentdomain:443",
-        "Error: get_certificate_chain: nonexistentdomain:443 is invalid or not known.",
-    ))
-
-    monkeypatch.setattr("ocspchecker.ocspchecker.get_ocsp_status", mock_get_ocsp_status)
+    monkeypatch.setattr(
+        "ocspchecker.ocspchecker.get_certificate_chain",
+        MagicMock(side_effect=Exception(
+            "get_certificate_chain: nonexistentdomain:443 is invalid or not known."
+        )),
+    )
 
     result = get_ocsp_status("nonexistentdomain", 443)
 
@@ -228,12 +238,12 @@ def test_end_to_end_test_bad_fqdn(monkeypatch):
 def test_end_to_end_test_host_timeout(monkeypatch):
     """test the full function end to end"""
 
-    mock_get_ocsp_status = MagicMock(side_effect=Exception(
-        "Host: nonexistentdomain:443",
-        "Error: get_certificate_chain: Connection to espn.com:65534 timed out.",
-    ))
-
-    monkeypatch.setattr("ocspchecker.ocspchecker.get_ocsp_status", mock_get_ocsp_status)
+    monkeypatch.setattr(
+        "ocspchecker.ocspchecker.get_certificate_chain",
+        MagicMock(side_effect=Exception(
+            "get_certificate_chain: Connection to espn.com:65534 timed out."
+        )),
+    )
 
     result = get_ocsp_status("espn.com", 65534)
 

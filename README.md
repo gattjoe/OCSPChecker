@@ -15,14 +15,13 @@ __Python__ - Python 3.10 (64-bit) and above.
 
 ## Installation
 
-It is strongly recommended to run ocsp-checker in a virtual environment. This will prevent you from impacting your system python when installing its dependencies. [venv](https://docs.python.org/3/library/venv.html) is a good option, with an example below:
+It is strongly recommended to run ocsp-checker in a virtual environment.
 
-```python -m venv ocsp-checker```
-```cd ocsp-checker && source bin/activate```
-
-Once your virtual environment is activated, install ocsp-checker as follows:
-
-```pip install ocsp-checker```
+```
+python -m venv ocsp-checker
+cd ocsp-checker && source bin/activate
+pip install ocsp-checker
+```
 
 ## Usage
 

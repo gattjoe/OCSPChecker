@@ -18,11 +18,7 @@ from . import certs
 def test_a_cert_from_each_root_ca(root_ca):
     """Test a cert from each root CA to ensure test coverage"""
 
-    try:
-        ocsp_request = get_ocsp_status(root_ca, 443)
-
-    except Exception as err:
-        raise err
+    ocsp_request = get_ocsp_status(root_ca, 443)
 
     assert ocsp_request[2] == "OCSP Status: GOOD"
 

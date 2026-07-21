@@ -94,3 +94,8 @@
 - Removed support for Python 3.9 and added support for Python 3.14
 - Updated GitHub Actions and CI
 - Enhanced input validation
+
+# v2.03
+- Removed devcontainer and Dockerfile
+- Ran ponytail against the repo and removed custom proxy code
+-

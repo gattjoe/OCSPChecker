@@ -4,6 +4,7 @@
 
  For a short-term fix, I will use nassl to grab the full cert chain. """
 
+from http.client import HTTPConnection
 from socket import gaierror, timeout, socket, SOCK_STREAM, AF_INET
 from typing import List, Optional, Tuple, Union
 from urllib.parse import urlparse
@@ -19,13 +20,10 @@ from nassl.ssl_client import (
 from cryptography.x509 import load_pem_x509_certificate, ocsp, ExtensionNotFound
 from nassl.cert_chain_verifier import CertificateChainVerificationFailed
 from cryptography.hazmat.primitives import serialization
-from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.hashes import SHA1
 from cryptography.x509.oid import ExtensionOID, AuthorityInformationAccessOID
 from nassl._nassl import OpenSSLError
 import certifi
-
-from ocspchecker.utils.http_proxy_connect import http_proxy_connect
 
 
 class InitialConnectionError(Exception):
@@ -143,47 +141,48 @@ def get_certificate_chain(
 ) -> List[str]:
     """Connect to the host on the port and obtain certificate chain"""
 
-    func_name: str = "get_certificate_chain"
-
     cert_chain: list = []
 
     soc = socket(AF_INET, SOCK_STREAM, proto=0)
     soc.settimeout(request_timeout)
 
     try:
-        if path_to_ca_certs.is_file():
-            pass
-    except FileNotFoundError:
-        raise OSError(f"ca cert file {path_to_ca_certs} not found") from None
-
-    try:
         if proxy is not None:
-            http_proxy_connect((host, port), proxy=proxy, soc=soc)
+            soc.close()
+            proxy_host, proxy_port = proxy
+            tunnel = HTTPConnection(proxy_host, proxy_port, timeout=request_timeout)
+            tunnel.set_tunnel(host, port)
+            try:
+                tunnel.connect()
+            except Exception:
+                tunnel.close()
+                raise
+            soc = tunnel.sock
         else:
             soc.connect((host, port))
 
     except gaierror:
         raise InitialConnectionError(
-            f"{func_name}: {host}:{port} is invalid or not known."
+            f"get_certificate_chain: {host}:{port} is invalid or not known."
         ) from None
 
     except timeout:
         soc.close()
         raise InitialConnectionError(
-            f"{func_name}: Connection to {host}:{port} timed out."
+            f"get_certificate_chain: Connection to {host}:{port} timed out."
         ) from None
 
     except ConnectionRefusedError:
-        raise InitialConnectionError(f"{func_name}: Connection to {host}:{port} refused.") from None
+        raise InitialConnectionError(f"get_certificate_chain: Connection to {host}:{port} refused.") from None
 
     except (IOError, OSError) as err:
         raise InitialConnectionError(
-            f"{func_name}: Unable to reach the host {host}. {str(err)}"
+            f"get_certificate_chain: Unable to reach the host {host}. {str(err)}"
         ) from None
 
     except (OverflowError, TypeError):
         raise InitialConnectionError(
-            f"{func_name}: Illegal port: {port}. Port must be between 0-65535."
+            f"get_certificate_chain: Illegal port: {port}. Port must be between 0-65535."
         ) from None
 
     ssl_client = SslClient(
@@ -201,20 +200,20 @@ def get_certificate_chain(
         cert_chain = ssl_client.get_verified_chain()
 
     except IOError:
-        raise ValueError(f"{func_name}: {host} did not respond to the Client Hello.") from None
+        raise ValueError(f"get_certificate_chain: {host} did not respond to the Client Hello.") from None
 
     except CertificateChainVerificationFailed:
-        raise ValueError(f"{func_name}: Certificate Verification failed for {host}.") from None
+        raise ValueError(f"get_certificate_chain: Certificate Verification failed for {host}.") from None
 
     except ClientCertificateRequested:
-        raise ValueError(f"{func_name}: Client Certificate Requested for {host}.") from None
+        raise ValueError(f"get_certificate_chain: Client Certificate Requested for {host}.") from None
 
     except OpenSSLError as err:
         for key, value in openssl_errors.items():
             if key in err.args[0]:
-                raise ValueError(f"{func_name}: {value}") from None
+                raise ValueError(f"get_certificate_chain: {value}") from None
 
-        raise ValueError(f"{func_name}: {err}") from None
+        raise ValueError(f"get_certificate_chain: {err}") from None
 
     finally:
         # shutdown() will also close the underlying socket
@@ -228,12 +227,10 @@ def extract_ocsp_url(cert_chain: List[str]) -> str:
     access location AUTHORITY_INFORMATION_ACCESS extensions to
     get the ocsp url"""
 
-    func_name: str = "extract_ocsp_url"
-
     ocsp_url: str = ""
 
     # Convert to a certificate object in cryptography.io
-    certificate = load_pem_x509_certificate(str.encode(cert_chain[0]), default_backend())
+    certificate = load_pem_x509_certificate(str.encode(cert_chain[0]))
 
     # Check to ensure it has an AIA extension and if so, extract ocsp url
     try:
@@ -246,11 +243,11 @@ def extract_ocsp_url(cert_chain: List[str]) -> str:
                 ocsp_url = aia_method.access_location.value
 
         if ocsp_url == "":
-            raise ValueError(f"{func_name}: OCSP URL missing from Certificate AIA Extension.")
+            raise ValueError("extract_ocsp_url: OCSP URL missing from Certificate AIA Extension.")
 
     except ExtensionNotFound:
         raise ValueError(
-            f"{func_name}: Certificate AIA Extension Missing. Possible MITM Proxy."
+            "extract_ocsp_url: Certificate AIA Extension Missing. Possible MITM Proxy."
         ) from None
 
     return ocsp_url
@@ -261,14 +258,12 @@ def build_ocsp_request(cert_chain: List[str]) -> bytes:
     see: https://cryptography.io/en/latest/x509/ocsp/#cryptography.x509.ocsp.OCSPRequestBuilder
     for more information"""
 
-    func_name: str = "build_ocsp_request"
-
     try:
-        leaf_cert = load_pem_x509_certificate(str.encode(cert_chain[0]), default_backend())
-        issuer_cert = load_pem_x509_certificate(str.encode(cert_chain[1]), default_backend())
+        leaf_cert = load_pem_x509_certificate(str.encode(cert_chain[0]))
+        issuer_cert = load_pem_x509_certificate(str.encode(cert_chain[1]))
 
     except ValueError:
-        raise Exception(f"{func_name}: Unable to load x509 certificate.") from None
+        raise Exception("build_ocsp_request: Unable to load x509 certificate.") from None
 
     # Build OCSP request
     builder = ocsp.OCSPRequestBuilder()
@@ -287,12 +282,11 @@ def get_ocsp_response(
 ):
     """Send OCSP request to ocsp responder and retrieve response"""
 
-    func_name: str = "get_ocsp_response"
     ocsp_response = None
 
     if not ocsp_url.lower().startswith(("http://", "https://")):
         raise OcspResponderError(
-            f"{func_name}: Unsupported scheme in OCSP URL: {ocsp_url!r}"
+            f"get_ocsp_response: Unsupported scheme in OCSP URL: {ocsp_url!r}"
         )
 
     try:
@@ -310,26 +304,24 @@ def get_ocsp_response(
 
     except error.URLError as err:
         if isinstance(err.reason, timeout):
-            raise OcspResponderError(f"{func_name}: Request timeout for {ocsp_url}")
+            raise OcspResponderError(f"get_ocsp_response: Request timeout for {ocsp_url}")
 
         if isinstance(err.reason, gaierror):
-            raise OcspResponderError(f"{func_name}: {ocsp_url} is invalid or not known.")
+            raise OcspResponderError(f"get_ocsp_response: {ocsp_url} is invalid or not known.")
 
-        raise OcspResponderError(f"{func_name}: Connection Error to {ocsp_url}. {str(err)}")
+        raise OcspResponderError(f"get_ocsp_response: Connection Error to {ocsp_url}. {str(err)}")
 
     except ValueError as err:
-        raise OcspResponderError(f"{func_name}: Connection Error to {ocsp_url}. {str(err)}")
+        raise OcspResponderError(f"get_ocsp_response: Connection Error to {ocsp_url}. {str(err)}")
 
     except timeout:
-        raise OcspResponderError(f"{func_name}: Request timeout for {ocsp_url}")
+        raise OcspResponderError(f"get_ocsp_response: Request timeout for {ocsp_url}")
 
     return ocsp_response
 
 
 def extract_ocsp_result(ocsp_response):
     """Extract the OCSP result from the provided ocsp_response"""
-
-    func_name: str = "extract_ocsp_result"
 
     try:
         ocsp_response = ocsp.load_der_ocsp_response(ocsp_response)
@@ -342,7 +334,7 @@ def extract_ocsp_result(ocsp_response):
         return f"OCSP Status: {certificate_status[1]}"
 
     except ValueError as err:
-        return f"{func_name}: {str(err)}"
+        return f"extract_ocsp_result: {str(err)}"
 
 
 def verify_host(host: str) -> str:
