@@ -90,15 +90,15 @@
 - Refactored some tests with mock
 - Added OCSPResponseError class and refactored error handling
 
-# v2.02
+# v2.0.2
 - Removed support for Python 3.9 and added support for Python 3.14
 - Updated GitHub Actions and CI
 - Enhanced input validation
 
-# v2.03
+# v2.0.3
 - Removed devcontainer and Dockerfile
 - Ran ponytail against the repo and removed custom proxy code
 
-# v2.04
+# v2.0.4
 - Ran pylint and cleaned up code
 - Refactored some tests with mock
